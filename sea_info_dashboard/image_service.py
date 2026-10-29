@@ -100,3 +100,4 @@ def analyze_photo(raw: bytes) -> tuple[VisionResult, bytes]:
         note += " 일부 DB 대조 요청에 실패했습니다."
     return VisionResult(identification=result, database_matches=matches, database_note=note,
                         model=os.getenv("OPENAI_MODEL", ""), image_sha256=hashlib.sha256(jpeg).hexdigest()), jpeg
+

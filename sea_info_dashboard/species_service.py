@@ -98,3 +98,4 @@ def species_detail(aphia_id: int) -> SpeciesDetail:
     except HTTPException:
         note += " 일부 일반명·분포 추가 정보는 받지 못했습니다."
     return SpeciesDetail(species=species, vernaculars=vernaculars, distributions=distributions, note=note)
+

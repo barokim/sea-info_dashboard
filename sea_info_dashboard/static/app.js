@@ -255,3 +255,4 @@ $('analyze-button').addEventListener('click',async()=>{
   }catch(error){$('photo-status').textContent=error.message;}
   finally{$('analyze-button').disabled=false;}
 });
+

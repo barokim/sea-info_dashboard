@@ -127,3 +127,4 @@ def get_history_image(history_id: int) -> bytes:
     if row is None or row["image_jpeg"] is None:
         raise HTTPException(404, "저장된 이미지가 없습니다.")
     return row["image_jpeg"]
+

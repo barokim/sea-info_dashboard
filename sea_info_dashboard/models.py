@@ -16,6 +16,8 @@ class Region(BaseModel):
     name: str
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
+    station_code: str
+    station_name: str
 
 
 class TideEvent(BaseModel):
@@ -25,10 +27,14 @@ class TideEvent(BaseModel):
 
 
 class TideInfo(BaseModel):
-    mode: Literal["demo"]
+    mode: Literal["live"] = "live"
+    status: Literal["ok", "not_configured", "error", "no_data"]
     source_name: str
+    source_url: str
+    station_code: str
+    station_name: str
     note: str
-    events: list[TideEvent]
+    events: list[TideEvent] = Field(default_factory=list)
 
 
 class MarinePoint(BaseModel):
@@ -38,12 +44,33 @@ class MarinePoint(BaseModel):
 
 
 class MarineInfo(BaseModel):
-    mode: Literal["demo", "live"]
+    mode: Literal["live"] = "live"
+    status: Literal["ok", "error", "no_data"] = "ok"
     source_name: str
     source_url: str
     note: str
     fetched_at: datetime
-    points: list[MarinePoint] = Field(min_length=1)
+    points: list[MarinePoint] = Field(default_factory=list)
+
+
+class ObservationInfo(BaseModel):
+    status: Literal["ok", "not_configured", "error", "no_data"]
+    source_name: str = "국립해양조사원 조위관측소 최신 관측데이터"
+    source_url: str = "https://www.data.go.kr/data/15155508/openapi.do"
+    station_code: str
+    station_name: str
+    observed_at: datetime | None = None
+    fetched_at: datetime
+    water_temperature_c: float | None = None
+    tide_height_cm: float | None = None
+    wind_speed_ms: float | None = None
+    air_temperature_c: float | None = None
+    salinity_psu: float | None = None
+    air_pressure_hpa: float | None = None
+    wind_direction_deg: float | None = None
+    max_gust_speed_ms: float | None = None
+    stale: bool = False
+    note: str
 
 
 class DashboardResponse(BaseModel):
@@ -52,6 +79,8 @@ class DashboardResponse(BaseModel):
     timezone: str
     tides: TideInfo
     marine: MarineInfo
+    observations: ObservationInfo
+    history_id: int | None = None
 
 
 class Species(BaseModel):
@@ -61,6 +90,73 @@ class Species(BaseModel):
     group: str
     food_information: str
     source_url: str
+    rank: str | None = None
+    taxonomic_status: str | None = None
+    accepted_name: str | None = None
+    accepted_id: int | None = None
+    authority: str | None = None
+    taxonomy: dict[str, str] = Field(default_factory=dict)
+
+
+class SpeciesSearch(BaseModel):
+    query: str
+    resolved_query: str
+    source_name: str = "WoRMS · World Register of Marine Species"
+    source_url: str = "https://www.marinespecies.org/rest/"
+    note: str
+    items: list[Species]
+    history_id: int | None = None
+
+
+class SpeciesDetail(BaseModel):
+    species: Species
+    vernaculars: list[dict[str, str]] = Field(default_factory=list)
+    distributions: list[str] = Field(default_factory=list)
+    note: str
+    history_id: int | None = None
+
+
+class HistorySummary(BaseModel):
+    id: int
+    kind: Literal["dashboard", "species_search", "species_detail", "image_analysis"]
+    title: str
+    status: str
+    created_at: datetime
+
+
+class HistoryDetail(HistorySummary):
+    query: dict
+    result: dict
+    has_image: bool = False
+
+
+class VisionCandidate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    scientific_name: str
+    common_name_ko: str
+    visual_match: Literal["low", "medium", "high"]
+    visible_features: list[str]
+    distinguishing_limits: list[str]
+
+
+class VisionIdentification(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    status: Literal["candidates_found", "uncertain", "no_marine_life"]
+    image_quality: Literal["poor", "usable", "good"]
+    candidates: list[VisionCandidate] = Field(max_length=3)
+    explanation: str
+    suggested_photos: list[str]
+
+
+class VisionResult(BaseModel):
+    identification: VisionIdentification
+    database_matches: list[Species] = Field(default_factory=list)
+    database_note: str
+    specimen_edibility: str = "사진으로 해당 개체의 식용 안전성을 판단할 수 없습니다."
+    source_name: str = "OpenAI 이미지 분석 + WoRMS 학명 대조"
+    model: str
+    image_sha256: str
+    history_id: int | None = None
 
 
 class RecordCreate(InputModel):
@@ -88,3 +184,4 @@ class RecordPatch(InputModel):
     observed_on: date | None = None
     note: str | None = Field(default=None, max_length=500)
     favorite: bool | None = Field(default=None, strict=True)
+

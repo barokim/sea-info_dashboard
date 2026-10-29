@@ -50,3 +50,4 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
 - 날짜를 바꾸어도 같은 초안을 수정합니다. 이전 기록을 남기려면 Markdown으로 먼저 내려받으세요.
 - 호스팅된 사이트의 로그인·비공개 접근은 Sites가 제공합니다. 로컬 실행에는 그 로그인 기능이 포함되지 않습니다.
 - `.openai/hosting.json`의 `project_id`는 기존 사이트를 가리킵니다. 새 사이트를 만들 때 기존 ID를 그대로 사용하지 마세요.
+

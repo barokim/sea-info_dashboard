@@ -182,3 +182,4 @@ if __name__ == "__main__":
 
     # Render는 외부 요청을 받을 수 있는 주소와 PORT 환경 변수를 요구합니다.
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8001")))
+
